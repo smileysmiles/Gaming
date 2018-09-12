@@ -1,0 +1,4 @@
+{
+  "Request" : "$input.params('request')",
+  "type" : "$input.path('type')"
+}

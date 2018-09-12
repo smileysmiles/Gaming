@@ -1,0 +1,11 @@
+#set ($errorMessageObj = $util.parseJson($input.path('$.body')))
+<RSP request="$errorMessageObj.Request" rc="0" msg="explanitory text">
+    <APIVERSION>$errorMessageObj.apiversion</APIVERSION>
+    <GAMESESSIONID>$errorMessageObj.gamesessionid</GAMESESSIONID>
+    <ACCOUNTID>$errorMessageObj.accountid</ACCOUNTID>
+    <CURRENCY>$errorMessageObj.currency</CURRENCY>
+    <COUNTRY>$errorMessageObj.country</COUNTRY>
+    <JURISDICTION>$errorMessageObj.jurisdiction</JURISDICTION>
+    <NATIONALID></NATIONALID>
+    <NICKNAME></NICKNAME>
+</RSP>
