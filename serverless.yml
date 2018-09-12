@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: aws-nodejs # NOTE: update this with your service name
+service: Gaming # NOTE: update this with your service name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -20,6 +20,8 @@ service: aws-nodejs # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
+  stage: dev
+  region: eu-west-2
 
 # you can overwrite defaults here
 #  stage: dev
@@ -55,8 +57,28 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  Gaming:
+    handler: Gaming/handler.handler
+    events:
+      - http:
+         path: Gaming
+         method: get
+  NYX:
+    handler: NYX/handler.handler
+    events:
+      - http:
+         path: NYX
+         method: get
+         integration: lambda
+         request:
+           template:
+             application/json: ${file(NYXgetaccountrequesttemplate.txt)}
+         response:
+           headers:
+              Content-Type: "'text/xml'"
+           template: ${file(NYXgetaccountresponsetemplate.txt)}
+
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
