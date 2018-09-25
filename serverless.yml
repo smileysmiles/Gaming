@@ -28,9 +28,21 @@ provider:
 #  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+      Resource:
+        - "arn:aws:dynamodb:eu-west-2:387856001214:table/GamingSession"
+        - "arn:aws:dynamodb:eu-west-2:387856001214:table/Audit"
 #        - "s3:ListBucket"
 #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
 #    - Effect: "Allow"
@@ -48,23 +60,28 @@ provider:
 #    variable1: value1
 
 # you can add packaging information here
-#package:
+package:
 #  include:
 #    - include-me.js
 #    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
+  individually: true
+  exclude:
+    - node_modules/**
 #    - exclude-me-dir/**
 
 functions:
   Gaming:
     handler: Gaming/handler.handler
+    exclude:
+      - NYX/**
     events:
       - http:
          path: Gaming
-         method: get
+         method: post
   NYX:
     handler: NYX/handler.handler
+    exclude:
+      - Gaming/**
     events:
       - http:
          path: NYX
@@ -77,8 +94,18 @@ functions:
            headers:
               Content-Type: "'text/xml'"
            template: ${file(NYXgetaccountresponsetemplate.txt)}
-
-
+  Audit:
+    handler: Audit/handler.handler
+    exclude:
+      - Gaming/**
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - GamingSession
+              - StreamArn
+          batchSize: 10
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -114,8 +141,42 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
+resources:
+  Resources:
+    GamingSession:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: SessionToken #Temporary or permamemt token value
+            AttributeType: S
+        KeySchema:
+          - AttributeName: SessionToken # Token is unique
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: GamingSession
+        SSESpecification:
+          SSEEnabled: true
+        StreamSpecification:
+            StreamViewType: OLD_IMAGE
+    Audit:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: AuditId #Temporary or permamemt token value
+            AttributeType: S
+        KeySchema:
+          - AttributeName: AuditId # Token is unique
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: Audit
+        SSESpecification:
+          SSEEnabled: true
+
+
 #    NewResource:
 #      Type: AWS::S3::Bucket
 #      Properties:

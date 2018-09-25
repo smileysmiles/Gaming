@@ -1,11 +1,45 @@
-#set ($errorMessageObj = $util.parseJson($input.path('$.body')))
-<RSP request="$errorMessageObj.Request" rc="0" msg="explanitory text">
-    <APIVERSION>$errorMessageObj.apiversion</APIVERSION>
-    <GAMESESSIONID>$errorMessageObj.gamesessionid</GAMESESSIONID>
-    <ACCOUNTID>$errorMessageObj.accountid</ACCOUNTID>
-    <CURRENCY>$errorMessageObj.currency</CURRENCY>
-    <COUNTRY>$errorMessageObj.country</COUNTRY>
-    <JURISDICTION>$errorMessageObj.jurisdiction</JURISDICTION>
-    <NATIONALID></NATIONALID>
-    <NICKNAME></NICKNAME>
-</RSP>
+#set ($body = $util.parseJson($input.path('$.body')))
+#if($body.request == "getaccount")
+  <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+      <APIVERSION>$body.apiversion</APIVERSION>
+      <GAMESESSIONID>$body.gamesessionid</GAMESESSIONID>
+      <ACCOUNTID>$body.accountid</ACCOUNTID>
+      <CURRENCY>$body.currency</CURRENCY>
+      <COUNTRY>$body.country</COUNTRY>
+      <JURISDICTION>$body.jurisdiction</JURISDICTION>
+      <NATIONALID>$body.nationalid</NATIONALID>
+      <NICKNAME>$body.nickname</NICKNAME>
+  </RSP>
+#elseif($body.request == "getbalance")
+  <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+      <APIVERSION>$body.apiversion</APIVERSION>
+      <BONUSBALANCE>$body.bonusbalance</BONUSBALANCE>
+      <CURRENCY>$body.currency</CURRENCY>
+      <REALBALANCE>$body.realbalance</REALBALANCE>
+  </RSP>
+#elseif($body.request == "wager")
+  <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+      <APIVERSION>$body.apiversion</APIVERSION>
+      <REALMONEYBET>$body.realmoneybet</REALMONEYBET>
+      <BONUSMONEYBET>$body.bonusmoneybet</BONUSMONEYBET>
+      <REALBALANCE>$body.realbalance</REALBALANCE>
+      <BONUSBALANCE>$body.bonusbalance</BONUSBALANCE>
+      <CURRENCY>$body.currency</CURRENCY>
+  </RSP>
+#elseif($body.request == "result")
+    <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+        <APIVERSION>$body.apiversion</APIVERSION>
+        <REALBALANCE>$body.realbalance</REALBALANCE>
+        <BONUSBALANCE>$body.bonusbalance</BONUSBALANCE>
+        <CURRENCY>$body.currency</CURRENCY>
+        <TOTALAMOUNT>$body.totalamount</TOTALAMOUNT>
+    </RSP>
+#elseif($body.request == "rollback")
+    <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+        <APIVERSION>$body.apiversion</APIVERSION>
+        <REALBALANCE>$body.realbalance</REALBALANCE>
+        <BONUSBALANCE>$body.bonusbalance</BONUSBALANCE>
+        <CURRENCY>$body.currency</CURRENCY>
+        <TOTALAMOUNT>$body.totalamount</TOTALAMOUNT>
+    </RSP>
+#end

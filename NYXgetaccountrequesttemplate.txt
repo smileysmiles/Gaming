@@ -1,4 +1,21 @@
 {
-  "Request" : "$input.params('request')",
-  "type" : "$input.path('type')"
+  "provider" : "NYX",
+  "request" : "$input.params('request')",
+  "loginname" : "$input.params('loginname')",
+  "password" : "$input.params('password')",
+  "apiversion" : "$input.params('apiversion')",
+  "sessionid" : "$input.params('token')",
+  "device" : "$input.params('clientdevice')",
+  "product" : "$input.params('gameproduuct')",
+  "gametype" : "$input.params('gametype')",
+  "gamemodel" : "$input.params('gamemodel')",
+  "nogsgameid" : "$input.params('gameid')",
+  "currency" : "$input.params('currency')",
+  "context" : "$input.params('context')",
+  "accountid" : "$input.params('accountid')",
+  "betamount" : "$input.params('betamount')",
+  "roundid" : "$input.params('roundid')",
+  "transactionid" : "$input.params('transactionid')",
+  "wonamount" : "$input.params('wonamount')",
+  "gamestatus" : "$input.params('gamestatus')"
 }
