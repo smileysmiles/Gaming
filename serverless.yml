@@ -22,6 +22,9 @@ provider:
   runtime: nodejs8.10
   stage: dev
   region: eu-west-2
+  memorySize: 128
+  timeout: 10
+  logRetentionDays: 1
 
 # you can overwrite defaults here
 #  stage: dev
@@ -43,6 +46,7 @@ provider:
       Resource:
         - "arn:aws:dynamodb:eu-west-2:387856001214:table/GamingSession"
         - "arn:aws:dynamodb:eu-west-2:387856001214:table/Audit"
+        - "arn:aws:dynamodb:eu-west-2:387856001214:table/GamingTransaction"
 #        - "s3:ListBucket"
 #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
 #    - Effect: "Allow"
@@ -61,15 +65,17 @@ provider:
 
 # you can add packaging information here
 package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
   individually: true
   exclude:
     - node_modules/**
-#    - exclude-me-dir/**
 
 functions:
+  GetAccount:
+    handler: Texas/handler.getaccount
+    events:
+      - http:
+         path: Texas
+         method: post
   Gaming:
     handler: Gaming/handler.handler
     exclude:
@@ -156,10 +162,23 @@ resources:
           ReadCapacityUnits: '5'
           WriteCapacityUnits: '5'
         TableName: GamingSession
-        SSESpecification:
-          SSEEnabled: true
+        #SSESpecification:
+        #  SSEEnabled: true
         StreamSpecification:
             StreamViewType: OLD_IMAGE
+    GamingTransactions:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: GamingTransactionID #Temporary or permamemt token value
+            AttributeType: S
+        KeySchema:
+          - AttributeName: GamingTransactionID # Token is unique
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: GamingTransaction
     Audit:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -173,8 +192,34 @@ resources:
           ReadCapacityUnits: '5'
           WriteCapacityUnits: '5'
         TableName: Audit
-        SSESpecification:
-          SSEEnabled: true
+    Account:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: AccountID #Temporary or permamemt token value
+            AttributeType: S
+        KeySchema:
+          - AttributeName: AccountID # Token is unique
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: Account
+    Customer:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: CustomerID #Temporary or permamemt token value
+            AttributeType: S
+        KeySchema:
+          - AttributeName: CustomerID # Token is unique
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: Customer
+        #SSESpecification:
+        #  SSEEnabled: true
 
 
 #    NewResource:

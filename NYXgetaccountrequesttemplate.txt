@@ -4,7 +4,7 @@
   "loginname" : "$input.params('loginname')",
   "password" : "$input.params('password')",
   "apiversion" : "$input.params('apiversion')",
-  "sessionid" : "$input.params('token')",
+  "sessionid" : "$input.params('gamesessionid')",
   "device" : "$input.params('clientdevice')",
   "product" : "$input.params('gameproduuct')",
   "gametype" : "$input.params('gametype')",

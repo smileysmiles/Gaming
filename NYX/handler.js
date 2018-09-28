@@ -1,6 +1,11 @@
 'use strict';
 
-var Token = require('../Token.js')
+var AWS = require('aws-sdk');
+
+var Token = require('../Token.js');
+
+var db = new AWS.DynamoDB.DocumentClient();
+
 
 module.exports.handler = async (event, context) => {
 
@@ -41,7 +46,16 @@ class NYXProcessor
         response = this.getaccount();
         break;
       case "getbalance":
-        response = this.event;
+        response = this.getbalance();
+        break;
+      case "ping":
+        response = this.ping();
+        break;
+      case "wager":
+        response = this.wager();
+        break;
+      case "result":
+        response = this.result();
         break;
       default:
         response = this.event;
@@ -108,6 +122,124 @@ class NYXProcessor
     //get session Details
 
     //Call Get Account
+
+    return new Promise ( resolve =>
+    {
+      //validate request
+
+      //Get Session Details
+
+      //Get Customer Details from Texas using IDMMCustomer VIA API Gateway
+      var currency ="GBP";
+      var bonusbalance = 0;
+      var realbalance = 15.99;
+
+      //create base Account response constructor( request, resultcode, message, apiversion, currency, bonusbalance, realbalance )
+      resolve( new BalanceResponse( this.event.request, 0, "", this.event.apiversion, currency, bonusbalance, realbalance ));
+
+      //Update Token
+
+    });
+  }
+
+  result()
+  {
+    //validate request
+
+    //get session Details
+
+    //Call Get Account
+
+    return new Promise ( resolve =>
+    {
+      //validate request
+
+      //Get Session Details
+
+      //Get Customer Details from Texas using IDMMCustomer VIA API Gateway
+      var realmoneybet = this.event.betamount
+      var bonusmoneybet = 0
+      var bonusbalance = 0
+      var realbalance = 15.99 + this.event.wonamount
+      var currency = "GBP"
+      console.log(this.event);
+
+
+      //constructor( sessiontoken, transactionid, transactiontype, betamount, state, wonamount )
+      var transaction = new Transaction( this.event.sessionid, this.event.transactionid, "wager", this.event.betamount, "pending", this.event.wonamount)
+
+      //    constructor (request, resultcode, message, apiversion, currency, bonusbalance, realbalance, totalamount )
+      var response = new ResultResponse ( this.event.request, 0, "", this.event.apiversion, currency, bonusbalance, realbalance, this.event.betamount )
+
+    });
+  }
+
+  wager()
+  {
+    //validate request
+
+    //get session Details
+
+    //Call Get Account
+
+    return new Promise ( resolve =>
+    {
+      //validate request
+
+      //Get Session Details
+
+      //Get Customer Details from Texas using IDMMCustomer VIA API Gateway
+      var realmoneybet = this.event.betamount
+      var bonusmoneybet = 0
+      var bonusbalance = 0
+      var realbalance = 15.99 - this.event.betamount
+      var currency = "GBP"
+      console.log(this.event);
+      //constructor( sessiontoken, transactionid, transactiontype, betamount, state, wonamount )
+      var transaction = new Transaction( this.event.sessionid, this.event.transactionid, "wager", this.event.betamount, "placed", 0)
+
+      console.log(transaction);
+
+      var TransactionTable =
+      {
+          TableName:"GamingTransaction",
+          Item: transaction,
+          ConditionExpression: "attribute_not_exists(GamingTransactionID)" //prevent overwriting
+      };
+
+      db.put(TransactionTable, function(err, returndata)
+      {
+        if (err)
+        {
+          console.log( `Audit operation result : ${err}`);
+          if(err.code.includes("ConditionalCheckFailedException"))
+            //we will just send the same response as before.
+            resolve( new WagerResponse( this.event.request, 0, "", this.event.apiversion, currency, bonusbalance, realbalance, realmoneybet, bonusmoneybet, "placed" ));
+          else
+            resolve( new WagerResponse( this.event.request, 1, "Server Error", this.event.apiversion, null, null, null, null, null, null ));
+        }
+        else
+        {
+          console.log( `Audit operation result : ${returndata}`);
+          resolve( new WagerResponse( this.event.request, 0, "", this.event.apiversion, currency, bonusbalance, realbalance, realmoneybet, bonusmoneybet, "placed" ));
+        }
+      }.bind(this));
+
+
+    });
+  }
+
+
+
+  ping()
+  {
+    return new Promise ( resolve =>
+    {
+
+      //create base Account response constructor( request, resultcode, message, apiversion, currency, bonusbalance, realbalance )
+      resolve( new BalanceResponse( this.event.request, 0, "", this.event.apiversion ));
+
+    });
   }
 
   validate()
@@ -115,6 +247,20 @@ class NYXProcessor
     //validate abstract request details
 
     return true
+  }
+}
+
+class Transaction
+{
+  constructor( sessiontoken, transactionid, transactiontype, betamount, state, wonamount )
+  {
+    this.GamingTransactionID = `${sessiontoken}~${transactionid}~${transactiontype}`;
+    this.SessionToken = sessiontoken;
+    this.TransactionId = transactionid;
+    this.transactiontype = transactiontype;
+    this.betamount = betamount;
+    this.state = state;
+    this.wonamount = wonamount
   }
 }
 
@@ -133,5 +279,53 @@ class AccountResponse
     this.jurisdiction = jurisdiction,
     this.nationalid = nationalid,
     this.nickname = nickname
+  }
+}
+
+class BalanceResponse
+{
+  constructor( request, resultcode, message, apiversion, currency, bonusbalance, realbalance )
+  {
+    this.request = request,
+    this.resultcode = resultcode,
+    this.message = message,
+    this.apiversion = apiversion,
+    this.currency = currency,
+    this.bonusbalance = bonusbalance,
+    this.realbalance = realbalance
+  }
+}
+
+
+class WagerResponse
+{
+  constructor (request, resultcode, message, apiversion, currency, bonusbalance, realbalance, realmoneybet, bonusmoneybet )
+  {
+    this.request = request,
+    this.resultcode = resultcode,
+    this.message = message,
+    this.apiversion = apiversion,
+    this.currency = currency,
+    this.bonusbalance = bonusbalance,
+    this.realbalance = realbalance,
+    this.realmoneybet = realmoneybet,
+    this.bonusmoneybet = bonusmoneybet
+  }
+}
+
+
+class ResultResponse
+{
+  constructor (request, resultcode, message, apiversion, currency, bonusbalance, realbalance, totalamount )
+  {
+    this.request = request,
+    this.resultcode = resultcode,
+    this.message = message,
+    this.apiversion = apiversion,
+    this.currency = currency,
+    this.bonusbalance = bonusbalance,
+    this.realbalance = realbalance,
+    this.totalamount = totalamount
+
   }
 }

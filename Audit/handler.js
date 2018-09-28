@@ -13,18 +13,23 @@ module.exports.handler = async (event, context, callback) => {
   console.log(event);
 
   event.Records.forEach((record) => {
+    var audit = new Audit( record );
+    await audit.insert(audit);
+    console.log(audit);
+    });
+
+  callback(null, `Successfully processed ${event.Records.length} records`);
+
+}
+
+async function process(event)
+{
+  event.Records.forEach((record) => {
       var audit = new Audit( record );
-      await audit.insert(audit);
+      audit.insert(audit);
       console.log(audit);
   });
-
-  callback(null, `Successfully processed ${event.Records.length} records`)
-
-  };
-
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
-};
+}
 
 class Audit
 {

@@ -42,4 +42,8 @@
         <CURRENCY>$body.currency</CURRENCY>
         <TOTALAMOUNT>$body.totalamount</TOTALAMOUNT>
     </RSP>
+#elseif($body.request == "ping")
+      <RSP request="$body.request" rc="$body.resultcode" msg="$body.message">
+          <APIVERSION>$body.apiversion</APIVERSION>
+      </RSP>
 #end
